@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UDEMY ADVISOR BOT</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>UDEMY ADVISOR</h1>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="input-container">
+            <label for="skill">SKILL YOU WANT TO LEARN</label>
+            <input type="text" id="skill" placeholder="Enter skill here">
+            <button onclick="fetchSuggestions()">Get Suggestions</button>
+        </div>
+        <div id="output"></div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>Developed by Tapoprasad Tripathy, API used - Eden AI, 2024</p>
+        </div>
+    </footer>
+
+    <script>
+        const apiKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiYWQ4YzI2MTQtYTkyYS00YWMzLTgyNWUtMzg4NDg2MzBjOGM2IiwidHlwZSI6ImFwaV90b2tlbiJ9.inDSWRPfGLVAMGcoP5oVWROG26F-obbdXMcT9ukl8fE';
+
+        function fetchSuggestions() {
+            const skill = document.getElementById('skill').value;
+            const instruction = `Name the best Udemy courses in ${skill}`;
+
+            // Show loading sign
+            document.getElementById('output').innerHTML = '<p>Loading suggestions...</p>';
+
+            const options = {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    instruction: instruction,
+                    providers: ["openai"]
+                })
+            };
+
+            fetch('https://api.edenai.run/v2/text/code_generation', options)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(response => {
+                    const generatedText = response.openai.generated_text;
+                    const formattedText = formatText(generatedText);
+                    document.getElementById('output').innerHTML = formattedText;
+                })
+                .catch(err => {
+                    console.error('Error fetching data from Eden AI API:', err);
+                    document.getElementById('output').innerText = `Error: ${err.message}`;
+                });
+        }
+
+        function formatText(text) {
+            return text
+                .replace(/\n\n/g, '<br><br>')
+                .replace(/\n/g, '<br>')
+                .replace(/(\d+\.\s)/g, '<strong>$1</strong>');
+        }
+    </script>
+</body>
+</html>
